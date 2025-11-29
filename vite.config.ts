@@ -4,32 +4,20 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "./", // IMPORTANT for Electron & Vercel
-
-  server: {
-    host: "::",
-    port: 8080,
-  },
+  base: "./",
 
   plugins: [
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
-      workbox: {
-        // cache these file types for offline use
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-      },
+      includeAssets: ["favicon.ico"],
       manifest: {
         name: "OR Network Diagram Generator",
-        short_name: "OR Network",
-        start_url: ".",
-        display: "standalone",
-        background_color: "#ffffff",
-        theme_color: "#0f172a",
+        short_name: "OR Diagram",
+        description: "Create network diagrams & CPM analysis",
+        theme_color: "#ffffff",
         icons: [
           {
             src: "icons/icon-192.png",
@@ -40,11 +28,12 @@ export default defineConfig(({ mode }) => ({
             src: "icons/icon-512.png",
             sizes: "512x512",
             type: "image/png",
+            purpose: "any maskable",
           },
         ],
       },
     }),
-  ].filter(Boolean),
+  ],
 
   resolve: {
     alias: {
