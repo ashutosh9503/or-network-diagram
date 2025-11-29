@@ -10,29 +10,33 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: ["favicon.ico"],
-      manifest: {
-        name: "OR Network Diagram Generator",
-        short_name: "OR Diagram",
-        description: "Create network diagrams & CPM analysis",
-        theme_color: "#ffffff",
-        icons: [
-          {
-            src: "icons/icon-192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "icons/icon-512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-        ],
+VitePWA({
+  registerType: "autoUpdate",
+  includeAssets: ["favicon.ico"],
+  manifest: {
+    name: "OR Network Diagram Generator",
+    short_name: "OR Diagram",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#ffffff",
+    theme_color: "#ffffff",
+    icons: [
+      {
+        src: "icons/icon-192.jpg",
+        sizes: "192x192",
+        type: "image/jpeg",
       },
-    }),
+      {
+        src: "icons/icon-512.jpg",
+        sizes: "512x512",
+        type: "image/jpeg",
+        purpose: "any maskable",
+      },
+    ],
+  },
+}),
+
+
   ],
 
   resolve: {
