@@ -4,22 +4,25 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
-
-
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "./",
+  base: "./", // IMPORTANT for Electron & Vercel
+
   server: {
     host: "::",
     port: 8080,
   },
+
   plugins: [
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
+      workbox: {
+        // cache these file types for offline use
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+      },
       manifest: {
         name: "OR Network Diagram Generator",
         short_name: "OR Network",
@@ -41,11 +44,11 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-  ],
+  ].filter(Boolean),
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
 }));
-
