@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ActivityForm } from "@/components/ActivityForm";
 import { ActivityTable } from "@/components/ActivityTable";
@@ -8,6 +8,9 @@ import { Activity } from "@/types/activity";
 import { calculateNetworkAnalysis } from "@/utils/networkCalculations";
 import { toast } from "sonner";
 import { Network, Trash2, FileDown, Database } from "lucide-react";
+import html2canvas from "html2canvas";
+
+
 
 const SAMPLE_DATA: Activity[] = [
   { id: "A", duration: 3, predecessors: [] },
@@ -19,34 +22,83 @@ const SAMPLE_DATA: Activity[] = [
 ];
 
 const Index = () => {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<Activity[]>(() => {
+    const saved = localStorage.getItem("activities");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("activities", JSON.stringify(activities));
+  }, [activities]);
+
   const [showDiagram, setShowDiagram] = useState(false);
+
+  // ⭐ We add THIS! ⭐
+  const diagramRef = useRef<HTMLDivElement | null>(null);
 
   const calculatedActivities = useMemo(
     () => calculateNetworkAnalysis(activities),
     [activities]
   );
 
+  // ...
+
+
   const handleAddActivity = (activity: Activity) => {
     setActivities((prev) => [...prev, activity]);
     setShowDiagram(false);
   };
 
-  const handleDeleteActivity = (id: string) => {
-    // Check if any activity depends on this one
-    const dependents = activities.filter((a) => a.predecessors.includes(id));
-    if (dependents.length > 0) {
-      toast.error(
-        `Cannot delete ${id}: activities ${dependents
-          .map((a) => a.id)
-          .join(", ")} depend on it`
-      );
-      return;
-    }
-    setActivities((prev) => prev.filter((a) => a.id !== id));
-    setShowDiagram(false);
-    toast.success(`Activity ${id} deleted`);
-  };
+const handleDeleteActivity = (id: string) => {
+  // 1) Ask for confirmation
+  const confirmDelete = confirm(
+    `Are you sure you want to delete activity ${id}?`
+  );
+  if (!confirmDelete) return;
+
+  // 2) Check if any activity depends on this one
+  const dependents = activities.filter((a) => a.predecessors.includes(id));
+  if (dependents.length > 0) {
+    toast.error(
+      `Cannot delete ${id}: activities ${dependents
+        .map((a) => a.id)
+        .join(", ")} depend on it`
+    );
+    return;
+  }
+
+  // 3) Safe to delete
+  setActivities((prev) => prev.filter((a) => a.id !== id));
+  setShowDiagram(false);
+  toast.success(`Activity ${id} deleted`);
+};
+const handleExportDiagram = async () => {
+  if (!diagramRef.current) {
+    toast.error("No diagram to export yet");
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(diagramRef.current, {
+      backgroundColor: "#ffffff", // nice clean white background
+      scale: 2,                   // higher resolution
+    });
+
+    const dataUrl = canvas.toDataURL("image/png");
+
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = "or-network-diagram.png";
+    link.click();
+
+    toast.success("Diagram downloaded as PNG");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to export diagram");
+  }
+};
+
+
 
   const handleClearAll = () => {
     setActivities([]);
@@ -198,21 +250,33 @@ const Index = () => {
               </div>
             )}
 
-            <Button
-              onClick={handleGenerateDiagram}
-              disabled={activities.length === 0}
-              className="w-full h-14 text-lg"
-              size="lg"
-            >
-              <Network className="mr-2 h-5 w-5" />
-              Generate Network Diagram
-            </Button>
+         {/* Generate diagram */}
+  <Button
+    onClick={handleGenerateDiagram}
+    disabled={activities.length === 0}
+    className="w-full h-14 text-lg"
+    size="lg"
+  >
+    <Network className="mr-2 h-5 w-5" />
+    Generate Network Diagram
+  </Button>
+
+  {/* Download PNG */}
+  <Button
+    variant="outline"
+    onClick={handleExportDiagram}
+    disabled={!showDiagram || activities.length === 0}
+    className="w-full h-14 text-lg"
+    size="lg"
+  >
+    Download Diagram (PNG)
+  </Button>
           </div>
         </div>
 
         {/* Diagram Section */}
         {showDiagram && activities.length > 0 && (
-          <div className="mt-12 space-y-8">
+           <div className="mt-12 space-y-8" ref={diagramRef}>
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-4">
                 Network Diagram
