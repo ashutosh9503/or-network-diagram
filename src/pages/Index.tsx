@@ -9,6 +9,9 @@ import { calculateNetworkAnalysis } from "@/utils/networkCalculations";
 import { toast } from "sonner";
 import { Network, Trash2, FileDown, Database } from "lucide-react";
 import * as htmlToImage from "html-to-image";
+import { motion } from "framer-motion";
+
+
 
 
 
@@ -126,6 +129,10 @@ const handleExportAnalysis = async () => {
 };
 
 
+const handleLoadSampleProject = () => {
+  setActivities(SAMPLE_DATA);
+  setShowDiagram(true); // or false if you want them to click Generate first
+};
 
 
 
@@ -177,31 +184,78 @@ const handleExportAnalysis = async () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 via-accent/5 to-background py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Operations Research Network Diagram Generator
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Enter activities and durations to automatically create your network
-            diagram and critical path analysis
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => document.getElementById("input-section")?.scrollIntoView({ behavior: "smooth" })}>
-              Start Building Network
-            </Button>
-            <Button size="lg" variant="outline" onClick={handleLoadSample}>
-              <Database className="mr-2 h-5 w-5" />
-              Load Example Project
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Hero section */}
+<motion.section
+  className="mb-8 rounded-2xl bg-slate-900/40 px-6 py-8 shadow-lg shadow-slate-900/40 border border-slate-800"
+  initial={{ opacity: 0, y: -20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5, ease: "easeOut" }}
+>
+  <h1 className="text-center text-3xl sm:text-4xl font-bold text-slate-50">
+    Operations Research Network Diagram
+    <br />
+    <span className="text-sky-400">Generator</span>
+  </h1>
+  <p className="mt-3 text-center text-sm text-slate-300 max-w-2xl mx-auto">
+    Enter activities and durations to automatically create your network
+    diagram and critical path analysis.
+  </p>
+
+  {/* buttons row */}
+  <motion.div
+    className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.2, duration: 0.4 }}
+  >
+    {/* main button gets hover / tap animation */}
+    <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+<div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+  <Button
+    size="lg"
+    className="bg-blue-700 text-white hover:bg-blue-800 shadow-md"
+    onClick={() =>
+      document.getElementById("input-section")?.scrollIntoView({ behavior: "smooth" })
+    }
+  >
+    Start Building Network
+  </Button>
+
+  <Button
+    size="lg"
+    variant="outline"
+    className="
+      bg-white
+      border-blue-400
+      text-blue-600
+      hover:bg-blue-50 hover:text-blue-700
+      shadow"
+    onClick={handleLoadSampleProject}
+  >
+    Load Example Project
+  </Button>
+</div>
+
+
+    </motion.div>
+
+    {/* keep your other input/button beside it */}
+    {/* ... your existing code (duration input etc.) ... */}
+  </motion.div>
+</motion.section>
+
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-2 gap-8" id="input-section">
+       <motion.section
+  className="grid lg:grid-cols-2 gap-8"
+  id="input-section"
+  initial={{ opacity: 0, y: 24 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, amount: 0.2 }}
+  transition={{ duration: 0.45 }}
+>
+
           {/* Left: Input Section */}
           <div className="space-y-6">
             <div>
@@ -312,7 +366,8 @@ const handleExportAnalysis = async () => {
 </div>
 
           </div>
-        </div>
+        </motion.section>
+
 
         {/* Diagram Section */}
       {showDiagram && activities.length > 0 && (
