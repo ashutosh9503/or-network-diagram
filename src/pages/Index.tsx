@@ -8,7 +8,8 @@ import { Activity } from "@/types/activity";
 import { calculateNetworkAnalysis } from "@/utils/networkCalculations";
 import { toast } from "sonner";
 import { Network, Trash2, FileDown, Database } from "lucide-react";
-import html2canvas from "html2canvas";
+import * as htmlToImage from "html-to-image";
+
 
 
 
@@ -79,44 +80,42 @@ const handleExportDiagram = async () => {
   }
 
   try {
-    const canvas = await html2canvas(diagramRef.current, {
+    // Make sure everything is visible before capturing
+    const dataUrl = await htmlToImage.toPng(diagramRef.current, {
+      pixelRatio: 3,      // higher = sharper on phones
+      cacheBust: true,
       backgroundColor: "#ffffff",
-      scale: 2,
     });
-  const dataUrl = canvas.toDataURL("image/png");
+
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = "or-network-diagram.png";
+    link.download = "network-diagram.png";
     link.click();
-
-    toast.success("Diagram downloaded as PNG");
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     toast.error("Failed to export diagram");
   }
 };
 
 const handleExportAnalysis = async () => {
   if (!analysisRef.current) {
-    toast.error("No analysis table to export yet");
+    toast.error("No analysis to export yet");
     return;
   }
 
   try {
-    const canvas = await html2canvas(analysisRef.current, {
+    const dataUrl = await htmlToImage.toPng(analysisRef.current, {
+      pixelRatio: 3,
+      cacheBust: true,
       backgroundColor: "#ffffff",
-      scale: 2,
     });
 
-    const dataUrl = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = dataUrl;
-    link.download = "or-critical-path-analysis.png";
+    link.download = "critical-path-analysis.png";
     link.click();
-
-    toast.success("Analysis table downloaded as PNG");
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     toast.error("Failed to export analysis");
   }
 };
@@ -314,20 +313,21 @@ const handleExportAnalysis = async () => {
       {showDiagram && activities.length > 0 && (
   <div className="mt-12 space-y-8">
     {/* Network Diagram section */}
-    <div ref={diagramRef}>
-      <h2 className="text-2xl font-bold text-foreground mb-4">
-        Network Diagram
-      </h2>
-      <NetworkDiagram activities={activities} />
-    </div>
+<div ref={diagramRef} className="mt-12 space-y-8">
+  <h2 className="text-2xl font-bold text-foreground mb-4">
+    Network Diagram
+  </h2>
+  <NetworkDiagram activities={activities} />
+</div>
 
-    {/* Critical Path Analysis section */}
-    <div ref={analysisRef}>
-      <h2 className="text-2xl font-bold text-foreground mb-4">
-        Critical Path Analysis
-      </h2>
-      <AnalysisTable activities={calculatedActivities} />
-    </div>
+{/* Critical Path Analysis section */}
+<div ref={analysisRef} className="mt-12 space-y-4">
+  <h2 className="text-2xl font-bold text-foreground mb-4">
+    Critical Path Analysis
+  </h2>
+  <AnalysisTable activities={calculatedActivities} />
+</div>
+
   </div>
 )}
 
