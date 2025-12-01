@@ -32,9 +32,9 @@ const Index = () => {
   }, [activities]);
 
   const [showDiagram, setShowDiagram] = useState(false);
+const diagramRef = useRef<HTMLDivElement | null>(null);
+const analysisRef = useRef<HTMLDivElement | null>(null);
 
-  // ⭐ We add THIS! ⭐
-  const diagramRef = useRef<HTMLDivElement | null>(null);
 
   const calculatedActivities = useMemo(
     () => calculateNetworkAnalysis(activities),
@@ -80,12 +80,10 @@ const handleExportDiagram = async () => {
 
   try {
     const canvas = await html2canvas(diagramRef.current, {
-      backgroundColor: "#ffffff", // nice clean white background
-      scale: 2,                   // higher resolution
+      backgroundColor: "#ffffff",
+      scale: 2,
     });
-
-    const dataUrl = canvas.toDataURL("image/png");
-
+  const dataUrl = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = dataUrl;
     link.download = "or-network-diagram.png";
@@ -97,6 +95,33 @@ const handleExportDiagram = async () => {
     toast.error("Failed to export diagram");
   }
 };
+
+const handleExportAnalysis = async () => {
+  if (!analysisRef.current) {
+    toast.error("No analysis table to export yet");
+    return;
+  }
+
+  try {
+    const canvas = await html2canvas(analysisRef.current, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+    });
+
+    const dataUrl = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = "or-critical-path-analysis.png";
+    link.click();
+
+    toast.success("Analysis table downloaded as PNG");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to export analysis");
+  }
+};
+
+
 
 
 
@@ -250,48 +275,62 @@ const handleExportDiagram = async () => {
               </div>
             )}
 
-         {/* Generate diagram */}
+       {/* Generate Diagram */}
+<div className="flex flex-col md:flex-row gap-4 w-full mt-6">
   <Button
     onClick={handleGenerateDiagram}
     disabled={activities.length === 0}
-    className="w-full h-14 text-lg"
-    size="lg"
+    className="w-full md:w-1/2 h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md border-none transition-all duration-200 active:scale-95"
   >
-    <Network className="mr-2 h-5 w-5" />
-    Generate Network Diagram
+    🚀 Generate Network Diagram
   </Button>
+</div>
 
-  {/* Download PNG */}
+{/* Download Buttons */}
+<div className="flex flex-col md:flex-row gap-4 w-full mt-3">
   <Button
     variant="outline"
     onClick={handleExportDiagram}
     disabled={!showDiagram || activities.length === 0}
-    className="w-full h-14 text-lg"
-    size="lg"
+    className="w-full md:w-1/2 h-14 text-lg font-semibold border-blue-600 text-blue-600 hover:bg-blue-50 transition-all duration-200 active:scale-95"
   >
-    Download Diagram (PNG)
+    📥 Download Diagram (PNG)
   </Button>
+
+  <Button
+    variant="outline"
+    onClick={handleExportAnalysis}
+    disabled={!showDiagram || activities.length === 0}
+    className="w-full md:w-1/2 h-14 text-lg font-semibold border-purple-600 text-purple-600 hover:bg-purple-50 transition-all duration-200 active:scale-95"
+  >
+    📊 Download Analysis (PNG)
+  </Button>
+</div>
+
           </div>
         </div>
 
         {/* Diagram Section */}
-        {showDiagram && activities.length > 0 && (
-           <div className="mt-12 space-y-8" ref={diagramRef}>
-            <div>
-              <h2 className="text-2xl font-bold text-foreground mb-4">
-                Network Diagram
-              </h2>
-              <NetworkDiagram activities={activities} />
-            </div>
+      {showDiagram && activities.length > 0 && (
+  <div className="mt-12 space-y-8">
+    {/* Network Diagram section */}
+    <div ref={diagramRef}>
+      <h2 className="text-2xl font-bold text-foreground mb-4">
+        Network Diagram
+      </h2>
+      <NetworkDiagram activities={activities} />
+    </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-foreground mb-4">
-                Critical Path Analysis
-              </h2>
-              <AnalysisTable activities={calculatedActivities} />
-            </div>
-          </div>
-        )}
+    {/* Critical Path Analysis section */}
+    <div ref={analysisRef}>
+      <h2 className="text-2xl font-bold text-foreground mb-4">
+        Critical Path Analysis
+      </h2>
+      <AnalysisTable activities={calculatedActivities} />
+    </div>
+  </div>
+)}
+
       </div>
 
       {/* Footer */}
