@@ -104,8 +104,13 @@ const handleExportAnalysis = async () => {
   }
 
   try {
-    const dataUrl = await htmlToImage.toPng(analysisRef.current, {
-      pixelRatio: 3,
+    const el = analysisRef.current;
+
+    // Higher resolution, but capped so file size is reasonable
+    const pixelRatio = Math.min(4, (window.devicePixelRatio || 1) * 2);
+
+    const dataUrl = await htmlToImage.toPng(el, {
+      pixelRatio,
       cacheBust: true,
       backgroundColor: "#ffffff",
     });
@@ -321,12 +326,23 @@ const handleExportAnalysis = async () => {
 </div>
 
 {/* Critical Path Analysis section */}
-<div ref={analysisRef} className="mt-12 space-y-4">
-  <h2 className="text-2xl font-bold text-foreground mb-4">
-    Critical Path Analysis
-  </h2>
-  <AnalysisTable activities={calculatedActivities} />
+<div
+  ref={analysisRef}
+  className="mt-12 flex justify-center px-2 sm:px-4"
+>
+  <div className="w-full max-w-4xl rounded-3xl bg-white shadow-lg border border-slate-100 p-4 sm:p-6 lg:p-8">
+    <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4 text-center">
+      Critical Path Analysis
+    </h2>
+
+    <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 text-center">
+      Network analysis results. Critical path activities are highlighted in red.
+    </p>
+
+    <AnalysisTable activities={calculatedActivities} />
+  </div>
 </div>
+
 
   </div>
 )}
