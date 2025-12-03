@@ -7,14 +7,10 @@ import { AnalysisTable } from "@/components/AnalysisTable";
 import { Activity } from "@/types/activity";
 import { calculateNetworkAnalysis } from "@/utils/networkCalculations";
 import { toast } from "sonner";
-import { Network, Trash2, FileDown, Database } from "lucide-react";
+import { Network, Trash2 } from "lucide-react";
 import * as htmlToImage from "html-to-image";
 import { motion } from "framer-motion";
-
-
-
-
-
+import LppSolver from "@/components/ui/LppSolver";
 
 const SAMPLE_DATA: Activity[] = [
   { id: "A", duration: 3, predecessors: [] },
@@ -31,121 +27,104 @@ const Index = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [showDiagram, setShowDiagram] = useState(false);
+
+  const diagramRef = useRef<HTMLDivElement | null>(null);
+  const analysisRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     localStorage.setItem("activities", JSON.stringify(activities));
   }, [activities]);
-
-  const [showDiagram, setShowDiagram] = useState(false);
-const diagramRef = useRef<HTMLDivElement | null>(null);
-const analysisRef = useRef<HTMLDivElement | null>(null);
-
 
   const calculatedActivities = useMemo(
     () => calculateNetworkAnalysis(activities),
     [activities]
   );
 
-  // ...
-
-
   const handleAddActivity = (activity: Activity) => {
     setActivities((prev) => [...prev, activity]);
     setShowDiagram(false);
   };
 
-const handleDeleteActivity = (id: string) => {
-  // 1) Ask for confirmation
-  const confirmDelete = confirm(
-    `Are you sure you want to delete activity ${id}?`
-  );
-  if (!confirmDelete) return;
-
-  // 2) Check if any activity depends on this one
-  const dependents = activities.filter((a) => a.predecessors.includes(id));
-  if (dependents.length > 0) {
-    toast.error(
-      `Cannot delete ${id}: activities ${dependents
-        .map((a) => a.id)
-        .join(", ")} depend on it`
+  const handleDeleteActivity = (id: string) => {
+    const confirmDelete = confirm(
+      `Are you sure you want to delete activity ${id}?`
     );
-    return;
-  }
+    if (!confirmDelete) return;
 
-  // 3) Safe to delete
-  setActivities((prev) => prev.filter((a) => a.id !== id));
-  setShowDiagram(false);
-  toast.success(`Activity ${id} deleted`);
-};
-const handleExportDiagram = async () => {
-  if (!diagramRef.current) {
-    toast.error("No diagram to export yet");
-    return;
-  }
+    const dependents = activities.filter((a) => a.predecessors.includes(id));
+    if (dependents.length > 0) {
+      toast.error(
+        `Cannot delete ${id}: activities ${dependents
+          .map((a) => a.id)
+          .join(", ")} depend on it`
+      );
+      return;
+    }
 
-  try {
-    // Make sure everything is visible before capturing
-    const dataUrl = await htmlToImage.toPng(diagramRef.current, {
-      pixelRatio: 3,      // higher = sharper on phones
-      cacheBust: true,
-      backgroundColor: "#ffffff",
-    });
+    setActivities((prev) => prev.filter((a) => a.id !== id));
+    setShowDiagram(false);
+    toast.success(`Activity ${id} deleted`);
+  };
 
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    link.download = "network-diagram.png";
-    link.click();
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to export diagram");
-  }
-};
+  const handleExportDiagram = async () => {
+    if (!diagramRef.current) {
+      toast.error("No diagram to export yet");
+      return;
+    }
 
-const handleExportAnalysis = async () => {
-  if (!analysisRef.current) {
-    toast.error("No analysis to export yet");
-    return;
-  }
+    try {
+      const dataUrl = await htmlToImage.toPng(diagramRef.current, {
+        pixelRatio: 3,
+        cacheBust: true,
+        backgroundColor: "#ffffff",
+      });
 
-  try {
-    const el = analysisRef.current;
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "network-diagram.png";
+      link.click();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export diagram");
+    }
+  };
 
-    // Higher resolution, but capped so file size is reasonable
-    const pixelRatio = Math.min(4, (window.devicePixelRatio || 1) * 2);
+  const handleExportAnalysis = async () => {
+    if (!analysisRef.current) {
+      toast.error("No analysis to export yet");
+      return;
+    }
 
-    const dataUrl = await htmlToImage.toPng(el, {
-      pixelRatio,
-      cacheBust: true,
-      backgroundColor: "#ffffff",
-    });
+    try {
+      const pixelRatio = Math.min(4, (window.devicePixelRatio || 1) * 2);
 
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    link.download = "critical-path-analysis.png";
-    link.click();
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to export analysis");
-  }
-};
+      const dataUrl = await htmlToImage.toPng(analysisRef.current, {
+        pixelRatio,
+        cacheBust: true,
+        backgroundColor: "#ffffff",
+      });
 
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "critical-path-analysis.png";
+      link.click();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export analysis");
+    }
+  };
 
-const handleLoadSampleProject = () => {
-  setActivities(SAMPLE_DATA);
-  setShowDiagram(true); // or false if you want them to click Generate first
-};
-
-
+  const handleLoadSampleProject = () => {
+    setActivities(SAMPLE_DATA);
+    setShowDiagram(true);
+    toast.success("Sample project loaded");
+  };
 
   const handleClearAll = () => {
     setActivities([]);
     setShowDiagram(false);
     toast.success("All activities cleared");
-  };
-
-  const handleLoadSample = () => {
-    setActivities(SAMPLE_DATA);
-    setShowDiagram(false);
-    toast.success("Sample project loaded");
   };
 
   const handleGenerateDiagram = () => {
@@ -157,109 +136,135 @@ const handleLoadSampleProject = () => {
     toast.success("Network diagram generated!");
   };
 
-  const criticalPath = useMemo(() => {
-    return calculatedActivities
-      .filter((a) => a.isCritical)
-      .map((a) => a.id)
-      .join(" → ");
-  }, [calculatedActivities]);
+  const criticalPath = useMemo(
+    () =>
+      calculatedActivities
+        .filter((a) => a.isCritical)
+        .map((a) => a.id)
+        .join(" → "),
+    [calculatedActivities]
+  );
 
-  const projectDuration = useMemo(() => {
-    return Math.max(...calculatedActivities.map((a) => a.ef), 0);
-  }, [calculatedActivities]);
+  const projectDuration = useMemo(
+    () => Math.max(...calculatedActivities.map((a) => a.ef), 0),
+    [calculatedActivities]
+  );
+
+  const scrollToSection = (id: string) => {
+    document
+      .getElementById(id)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border shadow-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Network className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* NAVBAR */}
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="container mx-auto flex items-center justify-between px-4 py-3">
+          {/* Logo + title */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-900 text-sm font-bold text-white shadow">
+              OR
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold">
                 OR Network Diagram Generator
               </h1>
+              <p className="text-xs text-slate-500">
+                CPM • PERT • LPP • Transportation (coming soon)
+              </p>
             </div>
           </div>
+
+          {/* Nav links */}
+          <nav className="hidden gap-3 text-sm font-medium text-slate-600 sm:flex">
+            <button
+              className="rounded-full px-3 py-1 hover:bg-slate-100"
+              onClick={() => scrollToSection("activities-section")}
+            >
+              Activities
+            </button>
+            <button
+              className="rounded-full px-3 py-1 hover:bg-slate-100"
+              onClick={() => scrollToSection("network-section")}
+            >
+              Network Diagram
+            </button>
+            <button
+              className="rounded-full px-3 py-1 hover:bg-slate-100"
+              onClick={() => scrollToSection("lpp-section")}
+            >
+              LPP Solver
+            </button>
+          </nav>
         </div>
       </header>
 
-      {/* Hero section */}
-<motion.section
-  className="mb-8 rounded-2xl bg-slate-900/40 px-6 py-8 shadow-lg shadow-slate-900/40 border border-slate-800"
-  initial={{ opacity: 0, y: -20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.5, ease: "easeOut" }}
->
-  <h1 className="text-center text-3xl sm:text-4xl font-bold text-slate-50">
-    Operations Research Network Diagram
-    <br />
-    <span className="text-sky-400">Generator</span>
-  </h1>
-  <p className="mt-3 text-center text-sm text-slate-300 max-w-2xl mx-auto">
-    Enter activities and durations to automatically create your network
-    diagram and critical path analysis.
-  </p>
+      {/* MAIN */}
+      <main className="container mx-auto px-4 py-10 space-y-16">
+        {/* HERO */}
+        <motion.section
+          id="hero"
+          className="rounded-3xl bg-white px-6 py-10 shadow-sm border border-slate-200"
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <h2 className="text-center text-3xl sm:text-4xl font-bold tracking-tight">
+            Operations Research{" "}
+            <span className="text-sky-600">Network Diagram</span> Generator
+          </h2>
+          <p className="mt-3 text-center text-sm text-slate-600 max-w-2xl mx-auto">
+            Enter activities and durations to automatically build the project
+            network, compute the critical path, and visualize LPP problems with
+            graphs – perfect for BSc IT OR labs.
+          </p>
 
-  {/* buttons row */}
-  <motion.div
-    className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.2, duration: 0.4 }}
-  >
-    {/* main button gets hover / tap animation */}
-    <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-<div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-  <Button
-    size="lg"
-    className="bg-blue-700 text-white hover:bg-blue-800 shadow-md"
-    onClick={() =>
-      document.getElementById("input-section")?.scrollIntoView({ behavior: "smooth" })
-    }
-  >
-    Start Building Network
-  </Button>
+          <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button
+                size="lg"
+                className="bg-sky-600 hover:bg-sky-700 text-white px-8 shadow-md"
+                onClick={() => scrollToSection("activities-section")}
+              >
+                Start Building Network
+              </Button>
+            </motion.div>
 
-  <Button
-    size="lg"
-    variant="outline"
-    className="
-      bg-white
-      border-blue-400
-      text-blue-600
-      hover:bg-blue-50 hover:text-blue-700
-      shadow"
-    onClick={handleLoadSampleProject}
-  >
-    Load Example Project
-  </Button>
-</div>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-sky-300 text-sky-700 bg-white hover:bg-sky-50"
+              onClick={handleLoadSampleProject}
+            >
+              Load Example Project
+            </Button>
 
+            <Button
+              size="lg"
+              variant="ghost"
+              className="text-slate-600"
+              onClick={() => scrollToSection("lpp-section")}
+            >
+              Go to LPP Solver
+            </Button>
+          </div>
+        </motion.section>
 
-    </motion.div>
-
-    {/* keep your other input/button beside it */}
-    {/* ... your existing code (duration input etc.) ... */}
-  </motion.div>
-</motion.section>
-
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-       <motion.section
-  className="grid lg:grid-cols-2 gap-8"
-  id="input-section"
-  initial={{ opacity: 0, y: 24 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true, amount: 0.2 }}
-  transition={{ duration: 0.45 }}
->
-
-          {/* Left: Input Section */}
+        {/* ACTIVITIES + SUMMARY */}
+        <motion.section
+          id="activities-section"
+          className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.4 }}
+        >
+          {/* Left column – input + activity list */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-4">
+              <h2 className="text-2xl font-bold mb-3 flex items-center gap-2">
+                <Network className="h-5 w-5 text-sky-600" />
                 Project Activities
               </h2>
               <ActivityForm
@@ -269,22 +274,21 @@ const handleLoadSampleProject = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold text-foreground">
-                  Activity List
-                </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Activity List</h3>
                 {activities.length > 0 && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleClearAll}
-                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    className="text-red-600 border-red-200 hover:bg-red-50"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Clear All
                   </Button>
                 )}
               </div>
+
               <ActivityTable
                 activities={activities}
                 onDeleteActivity={handleDeleteActivity}
@@ -292,26 +296,24 @@ const handleLoadSampleProject = () => {
             </div>
           </div>
 
-          {/* Right: Quick Stats */}
+          {/* Right column – project summary + actions */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-4">
-                Project Summary
-              </h2>
+              <h2 className="text-2xl font-bold mb-4">Project Summary</h2>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-                  <p className="text-sm text-muted-foreground mb-1">
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <p className="text-xs text-slate-500 mb-1">
                     Total Activities
                   </p>
-                  <p className="text-3xl font-bold text-primary">
+                  <p className="text-3xl font-bold text-slate-900">
                     {activities.length}
                   </p>
                 </div>
-                <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-                  <p className="text-sm text-muted-foreground mb-1">
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <p className="text-xs text-slate-500 mb-1">
                     Project Duration
                   </p>
-                  <p className="text-3xl font-bold text-accent">
+                  <p className="text-3xl font-bold text-sky-600">
                     {projectDuration || 0} days
                   </p>
                 </div>
@@ -319,97 +321,111 @@ const handleLoadSampleProject = () => {
             </div>
 
             {showDiagram && criticalPath && (
-              <div className="bg-critical-light border-2 border-critical rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-critical mb-2">
+              <div className="rounded-2xl border-2 border-rose-200 bg-rose-50 p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-rose-700 mb-1">
                   Critical Path
                 </h3>
-                <p className="text-xl font-mono font-bold text-foreground">
-                  {criticalPath}
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-xl font-mono font-bold">{criticalPath}</p>
+                <p className="mt-1 text-xs text-rose-700/80">
                   {calculatedActivities.filter((a) => a.isCritical).length}{" "}
                   critical activities
                 </p>
               </div>
             )}
 
-       {/* Generate Diagram */}
-<div className="flex flex-col md:flex-row gap-4 w-full mt-6">
-  <Button
-    onClick={handleGenerateDiagram}
-    disabled={activities.length === 0}
-    className="w-full md:w-1/2 h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md border-none transition-all duration-200 active:scale-95"
-  >
-    🚀 Generate Network Diagram
-  </Button>
-</div>
+            {/* Action buttons */}
+            <div className="flex flex-col gap-3">
+              <Button
+                onClick={handleGenerateDiagram}
+                disabled={activities.length === 0}
+                className="h-12 w-full bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold shadow-md"
+              >
+                🚀 Generate Network Diagram
+              </Button>
 
-{/* Download Buttons */}
-<div className="flex flex-col md:flex-row gap-4 w-full mt-3">
-  <Button
-    variant="outline"
-    onClick={handleExportDiagram}
-    disabled={!showDiagram || activities.length === 0}
-    className="w-full md:w-1/2 h-14 text-lg font-semibold border-blue-600 text-blue-600 hover:bg-blue-50 transition-all duration-200 active:scale-95"
-  >
-    📥 Download Diagram (PNG)
-  </Button>
-
-  <Button
-    variant="outline"
-    onClick={handleExportAnalysis}
-    disabled={!showDiagram || activities.length === 0}
-    className="w-full md:w-1/2 h-14 text-lg font-semibold border-purple-600 text-purple-600 hover:bg-purple-50 transition-all duration-200 active:scale-95"
-  >
-    📊 Download Analysis (PNG)
-  </Button>
-</div>
-
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button
+                  variant="outline"
+                  onClick={handleExportDiagram}
+                  disabled={!showDiagram || activities.length === 0}
+                  className="h-12 w-full border-sky-500 text-sky-600 hover:bg-sky-50 text-sm font-semibold"
+                >
+                  📥 Download Diagram (PNG)
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleExportAnalysis}
+                  disabled={!showDiagram || activities.length === 0}
+                  className="h-12 w-full border-violet-500 text-violet-600 hover:bg-violet-50 text-sm font-semibold"
+                >
+                  📊 Download Analysis (PNG)
+                </Button>
+              </div>
+            </div>
           </div>
         </motion.section>
 
+        {/* NETWORK + CRITICAL PATH SECTION */}
+        {showDiagram && activities.length > 0 && (
+          <motion.section
+            id="network-section"
+            className="space-y-10"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div ref={diagramRef} className="space-y-4">
+              <h2 className="text-2xl font-bold">Network Diagram</h2>
+              <NetworkDiagram activities={activities} />
+            </div>
 
-        {/* Diagram Section */}
-      {showDiagram && activities.length > 0 && (
-  <div className="mt-12 space-y-8">
-    {/* Network Diagram section */}
-<div ref={diagramRef} className="mt-12 space-y-8">
-  <h2 className="text-2xl font-bold text-foreground mb-4">
-    Network Diagram
-  </h2>
-  <NetworkDiagram activities={activities} />
-</div>
+            <div
+              ref={analysisRef}
+              className="flex justify-center px-2 sm:px-4"
+            >
+              <div className="w-full max-w-4xl rounded-3xl bg-white shadow-lg border border-slate-200 p-6 sm:p-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
+                  Critical Path Analysis
+                </h2>
+                <p className="text-sm text-slate-600 text-center mb-4">
+                  Network analysis results. Critical path activities are
+                  highlighted in red.
+                </p>
+                <AnalysisTable activities={calculatedActivities} />
+              </div>
+            </div>
+          </motion.section>
+        )}
 
-{/* Critical Path Analysis section */}
-<div
-  ref={analysisRef}
-  className="mt-12 flex justify-center px-2 sm:px-4"
->
-  <div className="w-full max-w-4xl rounded-3xl bg-white shadow-lg border border-slate-100 p-4 sm:p-6 lg:p-8">
-    <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-3 sm:mb-4 text-center">
-      Critical Path Analysis
-    </h2>
-
-    <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 text-center">
-      Network analysis results. Critical path activities are highlighted in red.
-    </p>
-
-    <AnalysisTable activities={calculatedActivities} />
-  </div>
-</div>
-
-
-  </div>
-)}
-
-      </div>
-
-      {/* Footer */}
-      <footer className="bg-card border-t border-border py-8 mt-16">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">
-            Built for Operations Research students and engineers
+        {/* LPP SECTION */}
+        <motion.section
+          id="lpp-section"
+          className="space-y-4"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.4 }}
+        >
+          <h2 className="text-2xl font-bold tracking-tight">
+            Linear Programming (LPP) – Graphical Solver
+          </h2>
+          <p className="text-sm text-slate-600 max-w-2xl">
+            Solve 2-variable maximization problems using the graphical method.
+            The solver plots all constraints, shades the feasible region, marks
+            corner points, and shows the optimal solution value.
           </p>
+          <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm">
+            <LppSolver />
+          </div>
+        </motion.section>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="border-t border-slate-200 bg-white py-6 mt-10">
+        <div className="container mx-auto px-4 text-center text-xs text-slate-500">
+          Built for Operations Research students and engineers · OR Diagram
+          Studio
         </div>
       </footer>
     </div>
