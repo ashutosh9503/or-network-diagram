@@ -22,7 +22,7 @@ export function Layout({ children }: LayoutProps) {
           OR Network Diagram Generator
         </p>
         <p className="text-xs text-slate-400">
-          CPM • PERT • LPP • Transportation (coming soon)
+          CPM • PERT • LPP • Transportation solver (others soon)
         </p>
       </div>
     </div>
@@ -59,6 +59,18 @@ export function Layout({ children }: LayoutProps) {
       >
         LPP Solver
       </button>
+      <button
+  onClick={() =>
+    document
+      .getElementById("transportation-section")
+      ?.scrollIntoView({ behavior: "smooth" })
+  }
+  className="px-4 py-2 text-sm font-medium text-slate-100/80 hover:text-white rounded-full border border-slate-500/60 hover:border-sky-400/80 hover:bg-sky-500/20 transition"
+>
+  Transportation
+</button>
+
+
     </nav>
   </div>
 </header>

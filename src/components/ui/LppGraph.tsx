@@ -83,9 +83,11 @@ function LppGraph({ constraints, result }: LppGraphProps) {
         Graph (not to exact scale, for understanding only)
       </h4>
       <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="w-full h-auto border border-slate-200 rounded-lg bg-slate-50"
-      >
+  viewBox="0 0 800 600"
+  className="w-full h-auto max-h-[420px]"
+  preserveAspectRatio="xMidYMid meet"
+>
+
         {/* axes */}
         {/* X-axis */}
         <line

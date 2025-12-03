@@ -30,7 +30,7 @@ export const MainNav: React.FC = () => {
               OR Network Diagram Generator
             </div>
             <div className="text-xs text-slate-500">
-              CPM • PERT • LPP • Transportation (soon)
+              CPM • PERT • LPP • Transportation solver (others soon)
             </div>
           </div>
         </div>
