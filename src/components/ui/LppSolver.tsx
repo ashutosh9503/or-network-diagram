@@ -145,8 +145,7 @@ const LppSolver: React.FC = () => {
 
     unique.sort(
       (p1, p2) =>
-        Math.atan2(p1.y - cy, p1.x - cx) -
-        Math.atan2(p2.y - cy, p2.x - cx)
+        Math.atan2(p1.y - cy, p1.x - cx) - Math.atan2(p2.y - cy, p2.x - cx)
     );
 
     // find best vertex for Z = zx x + zy y
@@ -182,7 +181,7 @@ const LppSolver: React.FC = () => {
     if (!solution || !solution.isFeasible) {
       return (
         <div className="flex items-center justify-center text-sm text-slate-500 h-64">
-          Enter constraints and click{" "}
+          Enter constraints and tap{" "}
           <span className="mx-1 font-semibold">Solve LPP</span> to see the
           graph.
         </div>
@@ -207,8 +206,7 @@ const LppSolver: React.FC = () => {
     const maxX = Math.max(50, ...xs) * 1.1;
     const maxY = Math.max(50, ...ys) * 1.1;
 
-    const sx = (x: number) =>
-      margin + (x / maxX) * (width - 2 * margin);
+    const sx = (x: number) => margin + (x / maxX) * (width - 2 * margin);
     const sy = (y: number) =>
       height - margin - (y / maxY) * (height - 2 * margin);
 
@@ -219,201 +217,206 @@ const LppSolver: React.FC = () => {
       s === "<=" ? "≤" : s === ">=" ? "≥" : "=";
 
     return (
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="w-full max-w-[500px] mx-auto bg-gradient-to-br from-amber-50 to-amber-100 rounded-3xl border border-amber-200"
-      >
-        {/* axes */}
-        <line
-          x1={sx(0)}
-          y1={sy(0)}
-          x2={sx(maxX * 1.02)}
-          y2={sy(0)}
-          stroke="black"
-          strokeWidth={2}
-          markerEnd="url(#arrow-x)"
-        />
-        <line
-          x1={sx(0)}
-          y1={sy(0)}
-          x2={sx(0)}
-          y2={sy(maxY * 1.02)}
-          stroke="black"
-          strokeWidth={2}
-          markerEnd="url(#arrow-y)"
-        />
-
-        <defs>
-          <marker
-            id="arrow-x"
-            markerWidth="8"
-            markerHeight="8"
-            refX="6"
-            refY="4"
-            orient="auto"
+      <div className="w-full max-w-full overflow-x-auto">
+        {/* inner wrapper keeps SVG centered but allows horizontal scroll on very small screens */}
+        <div className="min-w-[320px] max-w-[520px] mx-auto">
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            className="w-full h-auto bg-gradient-to-br from-amber-50 to-amber-100 rounded-3xl border border-amber-200"
           >
-            <path d="M0,0 L8,4 L0,8 z" fill="black" />
-          </marker>
-          <marker
-            id="arrow-y"
-            markerWidth="8"
-            markerHeight="8"
-            refX="4"
-            refY="2"
-            orient="auto"
-          >
-            <path d="M0,0 L4,4 L8,0 z" fill="black" />
-          </marker>
-        </defs>
+            {/* axes */}
+            <line
+              x1={sx(0)}
+              y1={sy(0)}
+              x2={sx(maxX * 1.02)}
+              y2={sy(0)}
+              stroke="black"
+              strokeWidth={2}
+              markerEnd="url(#arrow-x)"
+            />
+            <line
+              x1={sx(0)}
+              y1={sy(0)}
+              x2={sx(0)}
+              y2={sy(maxY * 1.02)}
+              stroke="black"
+              strokeWidth={2}
+              markerEnd="url(#arrow-y)"
+            />
 
-        {/* ticks & labels on X */}
-        {Array.from({ length: 6 }).map((_, i) => {
-          const xVal = stepX * (i + 1);
-          return (
-            <g key={`xtick-${i}`}>
-              <line
-                x1={sx(xVal)}
-                y1={sy(0) - 4}
-                x2={sx(xVal)}
-                y2={sy(0) + 4}
-                stroke="black"
-              />
-              <text
-                x={sx(xVal)}
-                y={sy(0) + 18}
-                fontSize={10}
-                textAnchor="middle"
+            <defs>
+              <marker
+                id="arrow-x"
+                markerWidth="8"
+                markerHeight="8"
+                refX="6"
+                refY="4"
+                orient="auto"
               >
-                {Math.round(xVal)}
-              </text>
-            </g>
-          );
-        })}
-
-        {/* ticks & labels on Y */}
-        {Array.from({ length: 6 }).map((_, i) => {
-          const yVal = stepY * (i + 1);
-          return (
-            <g key={`ytick-${i}`}>
-              <line
-                x1={sx(0) - 4}
-                y1={sy(yVal)}
-                x2={sx(0) + 4}
-                y2={sy(yVal)}
-                stroke="black"
-              />
-              <text
-                x={sx(0) - 10}
-                y={sy(yVal) + 4}
-                fontSize={10}
-                textAnchor="end"
+                <path d="M0,0 L8,4 L0,8 z" fill="black" />
+              </marker>
+              <marker
+                id="arrow-y"
+                markerWidth="8"
+                markerHeight="8"
+                refX="4"
+                refY="2"
+                orient="auto"
               >
-                {Math.round(yVal)}
-              </text>
-            </g>
-          );
-        })}
+                <path d="M0,0 L4,4 L8,0 z" fill="black" />
+              </marker>
+            </defs>
 
-        {/* FEASIBLE REGION */}
-        {feasiblePoints.length >= 3 && (
-          <polygon
-            points={feasiblePoints
-              .map((p) => `${sx(p.x)},${sy(p.y)}`)
-              .join(" ")}
-            fill="#4ade80"
-            fillOpacity={0.6}
-            stroke="#16a34a"
-            strokeWidth={2}
-          />
-        )}
+            {/* ticks & labels on X */}
+            {Array.from({ length: 6 }).map((_, i) => {
+              const xVal = stepX * (i + 1);
+              return (
+                <g key={`xtick-${i}`}>
+                  <line
+                    x1={sx(xVal)}
+                    y1={sy(0) - 4}
+                    x2={sx(xVal)}
+                    y2={sy(0) + 4}
+                    stroke="black"
+                  />
+                  <text
+                    x={sx(xVal)}
+                    y={sy(0) + 18}
+                    fontSize={10}
+                    textAnchor="middle"
+                  >
+                    {Math.round(xVal)}
+                  </text>
+                </g>
+              );
+            })}
 
-        {/* constraint lines */}
-        {constraints.map((c) => {
-          const pts: Point[] = [];
+            {/* ticks & labels on Y */}
+            {Array.from({ length: 6 }).map((_, i) => {
+              const yVal = stepY * (i + 1);
+              return (
+                <g key={`ytick-${i}`}>
+                  <line
+                    x1={sx(0) - 4}
+                    y1={sy(yVal)}
+                    x2={sx(0) + 4}
+                    y2={sy(yVal)}
+                    stroke="black"
+                  />
+                  <text
+                    x={sx(0) - 10}
+                    y={sy(yVal) + 4}
+                    fontSize={10}
+                    textAnchor="end"
+                  >
+                    {Math.round(yVal)}
+                  </text>
+                </g>
+              );
+            })}
 
-          if (c.b !== 0) {
-            const y1 = c.c / c.b;
-            if (y1 >= 0) pts.push({ x: 0, y: y1 });
-          }
-          if (c.a !== 0) {
-            const x1 = c.c / c.a;
-            if (x1 >= 0) pts.push({ x: x1, y: 0 });
-          }
-
-          if (pts.length < 2) {
-            // fallback in case of weird coefficients
-            pts.push({ x: 0, y: c.c / (c.b || 1) });
-            pts.push({ x: c.c / (c.a || 1), y: 0 });
-          }
-
-          const midX = (sx(pts[0].x) + sx(pts[1].x)) / 2;
-          const midY = (sy(pts[0].y) + sy(pts[1].y)) / 2 - 6;
-
-          return (
-            <g key={`line-${c.id}`}>
-              <line
-                x1={sx(pts[0].x)}
-                y1={sy(pts[0].y)}
-                x2={sx(pts[1].x)}
-                y2={sy(pts[1].y)}
-                stroke="black"
+            {/* FEASIBLE REGION */}
+            {feasiblePoints.length >= 3 && (
+              <polygon
+                points={feasiblePoints
+                  .map((p) => `${sx(p.x)},${sy(p.y)}`)
+                  .join(" ")}
+                fill="#4ade80"
+                fillOpacity={0.6}
+                stroke="#16a34a"
                 strokeWidth={2}
               />
-              <text
-                x={midX}
-                y={midY}
-                fontSize={11}
-                transform={`rotate(-35 ${midX} ${midY})`}
-              >
-                {`${c.a}x + ${c.b}y ${senseSymbol(c.sense)} ${c.c}`}
-              </text>
-            </g>
-          );
-        })}
+            )}
 
-        {/* vertices */}
-        {feasiblePoints.map((p, i) => (
-          <circle
-            key={`vertex-${i}`}
-            cx={sx(p.x)}
-            cy={sy(p.y)}
-            r={3}
-            fill="#166534"
-          />
-        ))}
+            {/* constraint lines */}
+            {constraints.map((c) => {
+              const pts: Point[] = [];
 
-        {/* best point */}
-        {bestPoint && (
-          <g>
-            <circle
-              cx={sx(bestPoint.x)}
-              cy={sy(bestPoint.y)}
-              r={5}
-              fill="#ef4444"
-            />
-            <text
-              x={sx(bestPoint.x) + 6}
-              y={sy(bestPoint.y) - 6}
-              fontSize={11}
-            >
-              ({bestPoint.x.toFixed(1)}, {bestPoint.y.toFixed(1)})
-            </text>
-          </g>
-        )}
-      </svg>
+              if (c.b !== 0) {
+                const y1 = c.c / c.b;
+                if (y1 >= 0) pts.push({ x: 0, y: y1 });
+              }
+              if (c.a !== 0) {
+                const x1 = c.c / c.a;
+                if (x1 >= 0) pts.push({ x: x1, y: 0 });
+              }
+
+              if (pts.length < 2) {
+                // fallback in case of weird coefficients
+                pts.push({ x: 0, y: c.c / (c.b || 1) });
+                pts.push({ x: c.c / (c.a || 1), y: 0 });
+              }
+
+              const midX = (sx(pts[0].x) + sx(pts[1].x)) / 2;
+              const midY = (sy(pts[0].y) + sy(pts[1].y)) / 2 - 6;
+
+              return (
+                <g key={`line-${c.id}`}>
+                  <line
+                    x1={sx(pts[0].x)}
+                    y1={sy(pts[0].y)}
+                    x2={sx(pts[1].x)}
+                    y2={sy(pts[1].y)}
+                    stroke="black"
+                    strokeWidth={2}
+                  />
+                  <text
+                    x={midX}
+                    y={midY}
+                    fontSize={11}
+                    transform={`rotate(-35 ${midX} ${midY})`}
+                  >
+                    {`${c.a}x + ${c.b}y ${senseSymbol(c.sense)} ${c.c}`}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* vertices */}
+            {feasiblePoints.map((p, i) => (
+              <circle
+                key={`vertex-${i}`}
+                cx={sx(p.x)}
+                cy={sy(p.y)}
+                r={3}
+                fill="#166534"
+              />
+            ))}
+
+            {/* best point */}
+            {bestPoint && (
+              <g>
+                <circle
+                  cx={sx(bestPoint.x)}
+                  cy={sy(bestPoint.y)}
+                  r={5}
+                  fill="#ef4444"
+                />
+                <text
+                  x={sx(bestPoint.x) + 6}
+                  y={sy(bestPoint.y) - 6}
+                  fontSize={11}
+                >
+                  ({bestPoint.x.toFixed(1)}, {bestPoint.y.toFixed(1)})
+                </text>
+              </g>
+            )}
+          </svg>
+        </div>
+      </div>
     );
   };
 
   // ---------- UI ----------
 
   return (
-    <div className="grid gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)]">
+    <div className="w-full grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1.2fr)]">
       {/* Left: inputs */}
       <div className="space-y-6">
         {/* Objective function */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">
+          <div className="flex items-center justify-between mb-2 gap-3">
+            <h3 className="text-base sm:text-lg font-semibold">
               Objective Function (
               {objectiveType === "max" ? "Maximization" : "Minimization"})
             </h3>
@@ -444,7 +447,7 @@ const LppSolver: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             <span>
               {objectiveType === "max" ? "Maximize" : "Minimize"} Z =
             </span>
@@ -467,8 +470,8 @@ const LppSolver: React.FC = () => {
 
         {/* Constraints */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">Constraints</h3>
+          <div className="flex items-center justify-between mb-2 gap-3">
+            <h3 className="text-base sm:text-lg font-semibold">Constraints</h3>
             <Button variant="outline" size="sm" onClick={addConstraint}>
               + Add Constraint
             </Button>
@@ -478,7 +481,7 @@ const LppSolver: React.FC = () => {
             {constraints.map((c, idx) => (
               <div
                 key={c.id}
-                className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+                className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
               >
                 <span className="w-6 text-xs font-semibold text-slate-500">
                   C{idx + 1}:
@@ -556,7 +559,7 @@ const LppSolver: React.FC = () => {
           className="w-full bg-sky-600 hover:bg-sky-700 text-white"
           onClick={solve}
         >
-          Solve LPP & Show Graph
+          Solve LPP &amp; Show Graph
         </Button>
 
         {solution && (
