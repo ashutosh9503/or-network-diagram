@@ -28,6 +28,11 @@ export const ActivityForm = ({
       return;
     }
 
+    if (!/^[A-Za-z]+$/.test(activityId.trim())) {
+      toast.error("Activity ID must contain only letters (e.g., A, B, C)");
+      return;
+    }
+
     if (!duration || parseFloat(duration) <= 0) {
       toast.error("Please enter a valid duration greater than 0");
       return;

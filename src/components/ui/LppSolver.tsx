@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTheme } from "@/components/theme-provider";
 
 type ConstraintSense = "<=" | ">=" | "=";
 
@@ -33,6 +34,12 @@ const LppSolver: React.FC = () => {
   const [objectiveType, setObjectiveType] = useState<"max" | "min">("max");
 
   const [solution, setSolution] = useState<Solution | null>(null);
+
+  const { theme } = useTheme();
+  // Simple check for dark mode to adjust SVG colors manually if needed, 
+  // though we will try to use CSS classes where possible.
+  // Note: theme might be 'system', checking classList is robust but React-way is fine.
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
 
   // ---------- helpers ----------
 
@@ -180,9 +187,9 @@ const LppSolver: React.FC = () => {
   const drawGraph = () => {
     if (!solution || !solution.isFeasible) {
       return (
-        <div className="flex items-center justify-center text-sm text-slate-500 h-64">
+        <div className="flex items-center justify-center text-sm text-slate-500 h-64 dark:text-slate-400">
           Enter constraints and tap{" "}
-          <span className="mx-1 font-semibold">Solve LPP</span> to see the
+          <span className="mx-1 font-semibold text-sky-600 dark:text-sky-400">Solve LPP</span> to see the
           graph.
         </div>
       );
@@ -222,7 +229,7 @@ const LppSolver: React.FC = () => {
         <div className="min-w-[320px] max-w-[520px] mx-auto">
           <svg
             viewBox={`0 0 ${width} ${height}`}
-            className="w-full h-auto bg-gradient-to-br from-amber-50 to-amber-100 rounded-3xl border border-amber-200"
+            className="w-full h-auto bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/10 dark:to-amber-950/20 rounded-3xl border border-amber-200 dark:border-amber-900/30"
           >
             {/* axes */}
             <line
@@ -230,7 +237,7 @@ const LppSolver: React.FC = () => {
               y1={sy(0)}
               x2={sx(maxX * 1.02)}
               y2={sy(0)}
-              stroke="black"
+              className="stroke-slate-900 dark:stroke-slate-300"
               strokeWidth={2}
               markerEnd="url(#arrow-x)"
             />
@@ -239,7 +246,7 @@ const LppSolver: React.FC = () => {
               y1={sy(0)}
               x2={sx(0)}
               y2={sy(maxY * 1.02)}
-              stroke="black"
+              className="stroke-slate-900 dark:stroke-slate-300"
               strokeWidth={2}
               markerEnd="url(#arrow-y)"
             />
@@ -253,7 +260,7 @@ const LppSolver: React.FC = () => {
                 refY="4"
                 orient="auto"
               >
-                <path d="M0,0 L8,4 L0,8 z" fill="black" />
+                <path d="M0,0 L8,4 L0,8 z" className="fill-slate-900 dark:fill-slate-300" />
               </marker>
               <marker
                 id="arrow-y"
@@ -263,7 +270,7 @@ const LppSolver: React.FC = () => {
                 refY="2"
                 orient="auto"
               >
-                <path d="M0,0 L4,4 L8,0 z" fill="black" />
+                <path d="M0,0 L4,4 L8,0 z" className="fill-slate-900 dark:fill-slate-300" />
               </marker>
             </defs>
 
@@ -277,13 +284,14 @@ const LppSolver: React.FC = () => {
                     y1={sy(0) - 4}
                     x2={sx(xVal)}
                     y2={sy(0) + 4}
-                    stroke="black"
+                    className="stroke-slate-900 dark:stroke-slate-400"
                   />
                   <text
                     x={sx(xVal)}
                     y={sy(0) + 18}
                     fontSize={10}
                     textAnchor="middle"
+                    className="fill-slate-700 dark:fill-slate-400"
                   >
                     {Math.round(xVal)}
                   </text>
@@ -301,13 +309,14 @@ const LppSolver: React.FC = () => {
                     y1={sy(yVal)}
                     x2={sx(0) + 4}
                     y2={sy(yVal)}
-                    stroke="black"
+                    className="stroke-slate-900 dark:stroke-slate-400"
                   />
                   <text
                     x={sx(0) - 10}
                     y={sy(yVal) + 4}
                     fontSize={10}
                     textAnchor="end"
+                    className="fill-slate-700 dark:fill-slate-400"
                   >
                     {Math.round(yVal)}
                   </text>
@@ -321,9 +330,9 @@ const LppSolver: React.FC = () => {
                 points={feasiblePoints
                   .map((p) => `${sx(p.x)},${sy(p.y)}`)
                   .join(" ")}
-                fill="#4ade80"
-                fillOpacity={0.6}
-                stroke="#16a34a"
+                fill="currentColor"
+                className="text-emerald-400 dark:text-emerald-500/40 opacity-60"
+                stroke="currentColor"
                 strokeWidth={2}
               />
             )}
@@ -357,7 +366,7 @@ const LppSolver: React.FC = () => {
                     y1={sy(pts[0].y)}
                     x2={sx(pts[1].x)}
                     y2={sy(pts[1].y)}
-                    stroke="black"
+                    className="stroke-slate-500 dark:stroke-slate-500"
                     strokeWidth={2}
                   />
                   <text
@@ -365,6 +374,7 @@ const LppSolver: React.FC = () => {
                     y={midY}
                     fontSize={11}
                     transform={`rotate(-35 ${midX} ${midY})`}
+                    className="fill-slate-600 dark:fill-slate-400"
                   >
                     {`${c.a}x + ${c.b}y ${senseSymbol(c.sense)} ${c.c}`}
                   </text>
@@ -379,7 +389,7 @@ const LppSolver: React.FC = () => {
                 cx={sx(p.x)}
                 cy={sy(p.y)}
                 r={3}
-                fill="#166534"
+                className="fill-emerald-800 dark:fill-emerald-400"
               />
             ))}
 
@@ -390,12 +400,14 @@ const LppSolver: React.FC = () => {
                   cx={sx(bestPoint.x)}
                   cy={sy(bestPoint.y)}
                   r={5}
-                  fill="#ef4444"
+                  className="fill-rose-500 dark:fill-rose-500 animate-pulse"
                 />
                 <text
                   x={sx(bestPoint.x) + 6}
                   y={sy(bestPoint.y) - 6}
                   fontSize={11}
+                  fontWeight="bold"
+                  className="fill-slate-900 dark:fill-white"
                 >
                   ({bestPoint.x.toFixed(1)}, {bestPoint.y.toFixed(1)})
                 </text>
@@ -417,54 +429,56 @@ const LppSolver: React.FC = () => {
         <div>
           <div className="flex items-center justify-between mb-2 gap-3">
             <h3 className="text-base sm:text-lg font-semibold">
-              Objective Function (
-              {objectiveType === "max" ? "Maximization" : "Minimization"})
+              Objective Function
             </h3>
 
-            <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 text-xs overflow-hidden">
+            <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 dark:bg-slate-900 dark:border-slate-800 text-xs overflow-hidden">
               <button
                 type="button"
                 onClick={() => setObjectiveType("max")}
-                className={`px-3 py-1 ${
-                  objectiveType === "max"
+                className={`px-3 py-1 transition-colors ${objectiveType === "max"
                     ? "bg-sky-600 text-white"
-                    : "text-slate-600"
-                }`}
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
               >
                 Max
               </button>
               <button
                 type="button"
                 onClick={() => setObjectiveType("min")}
-                className={`px-3 py-1 ${
-                  objectiveType === "min"
+                className={`px-3 py-1 transition-colors ${objectiveType === "min"
                     ? "bg-sky-600 text-white"
-                    : "text-slate-600"
-                }`}
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  }`}
               >
                 Min
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span>
+          <div className="flex flex-wrap items-center gap-2 text-sm p-3 rounded-lg bg-muted/40 border border-border">
+            <span className="font-mono font-medium">
               {objectiveType === "max" ? "Maximize" : "Minimize"} Z =
             </span>
-            <Input
-              className="w-20"
-              type="number"
-              value={zx}
-              onChange={(e) => setZx(parseNumber(e.target.value, zx))}
-            />
-            <span>x +</span>
-            <Input
-              className="w-20"
-              type="number"
-              value={zy}
-              onChange={(e) => setZy(parseNumber(e.target.value, zy))}
-            />
-            <span>y</span>
+            <div className="flex items-center gap-1">
+              <Input
+                className="w-16 h-8 bg-background"
+                type="number"
+                value={zx}
+                onChange={(e) => setZx(parseNumber(e.target.value, zx))}
+              />
+              <span className="font-serif italic">x</span>
+            </div>
+            <span>+</span>
+            <div className="flex items-center gap-1">
+              <Input
+                className="w-16 h-8 bg-background"
+                type="number"
+                value={zy}
+                onChange={(e) => setZy(parseNumber(e.target.value, zy))}
+              />
+              <span className="font-serif italic">y</span>
+            </div>
           </div>
         </div>
 
@@ -481,13 +495,13 @@ const LppSolver: React.FC = () => {
             {constraints.map((c, idx) => (
               <div
                 key={c.id}
-                className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+                className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm shadow-sm"
               >
-                <span className="w-6 text-xs font-semibold text-slate-500">
+                <span className="w-6 text-xs font-semibold text-muted-foreground">
                   C{idx + 1}:
                 </span>
                 <Input
-                  className="w-16"
+                  className="w-16 h-8"
                   type="number"
                   value={c.a}
                   onChange={(e) =>
@@ -498,9 +512,10 @@ const LppSolver: React.FC = () => {
                     )
                   }
                 />
-                <span>x +</span>
+                <span className="font-serif italic">x</span>
+                <span>+</span>
                 <Input
-                  className="w-16"
+                  className="w-16 h-8"
                   type="number"
                   value={c.b}
                   onChange={(e) =>
@@ -511,7 +526,7 @@ const LppSolver: React.FC = () => {
                     )
                   }
                 />
-                <span>y</span>
+                <span className="font-serif italic">y</span>
 
                 <select
                   value={c.sense}
@@ -522,7 +537,7 @@ const LppSolver: React.FC = () => {
                       e.target.value as ConstraintSense
                     )
                   }
-                  className="border rounded-md px-2 py-1 text-sm bg-white mx-1"
+                  className="border border-input rounded-md px-1 py-1 text-sm bg-background mx-1 h-8"
                 >
                   <option value="<=">&le;</option>
                   <option value=">=">&ge;</option>
@@ -530,7 +545,7 @@ const LppSolver: React.FC = () => {
                 </select>
 
                 <Input
-                  className="w-20"
+                  className="w-16 h-8"
                   type="number"
                   value={c.c}
                   onChange={(e) =>
@@ -544,7 +559,7 @@ const LppSolver: React.FC = () => {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="ml-1 h-7 w-7 text-slate-400 hover:text-red-500"
+                  className="ml-auto h-7 w-7 text-muted-foreground hover:text-destructive"
                   onClick={() => removeConstraint(c.id)}
                 >
                   ✕
@@ -563,29 +578,30 @@ const LppSolver: React.FC = () => {
         </Button>
 
         {solution && (
-          <div className="text-xs text-slate-600 space-y-1">
+          <div className="text-sm space-y-2 p-4 rounded-xl border border-border bg-muted/30">
             {!solution.isFeasible && (
-              <p className="text-red-600 font-semibold">
-                No feasible region for the given constraints.
+              <p className="text-destructive font-semibold flex items-center gap-2">
+                <span>⚠️</span> No feasible region found.
               </p>
             )}
 
             {solution.isFeasible && solution.bestPoint && (
               <>
-                <p>
-                  Optimal point (
-                  {objectiveType === "max" ? "Maximum" : "Minimum"} Z):{" "}
-                  <span className="font-semibold">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Optimal Point:</span>
+                  <span className="font-mono font-bold">
                     ({solution.bestPoint.x.toFixed(2)},{" "}
                     {solution.bestPoint.y.toFixed(2)})
                   </span>
-                </p>
-                <p>
-                  {objectiveType === "max" ? "Maximum" : "Minimum"} Z ={" "}
-                  <span className="font-semibold">
+                </div>
+                <div className="flex justify-between items-center text-lg">
+                  <span className="font-semibold text-foreground">
+                    {objectiveType === "max" ? "Maximum" : "Minimum"} Z:
+                  </span>
+                  <span className="font-bold text-sky-600 dark:text-sky-400">
                     {solution.bestValue?.toFixed(2)}
                   </span>
-                </p>
+                </div>
               </>
             )}
           </div>
@@ -593,7 +609,9 @@ const LppSolver: React.FC = () => {
       </div>
 
       {/* Right: graph */}
-      <div className="flex items-center justify-center">{drawGraph()}</div>
+      <div className="flex items-center justify-center p-4 rounded-2xl border border-border bg-card shadow-sm">
+        {drawGraph()}
+      </div>
     </div>
   );
 };
