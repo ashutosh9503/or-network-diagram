@@ -1,73 +1,120 @@
-# Welcome to your Lovable project
+📊 OR Network Diagram Generator
 
-## Project info
+A professional web application to create Operations Research network diagrams, compute the Critical Path, and perform CPM/PERT analysis visually and interactively.
 
-**URL**: https://lovable.dev/projects/f0742b52-23f2-4cd6-8b0c-17ef365e2894
+Built for students, faculty, and engineers.
 
-## How can I edit this code?
+🚀 Live Demo
 
-There are several ways of editing your application.
+👉 https://or-network-diagram.vercel.app
 
-**Use Lovable**
+✨ Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f0742b52-23f2-4cd6-8b0c-17ef365e2894) and start prompting.
+🧮 Automatic CPM / Critical Path calculation
 
-Changes made via Lovable will be committed automatically to this repo.
+🕸 Interactive Network Diagram (React Flow)
 
-**Use your preferred IDE**
+📋 Activity input with predecessors
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+📊 Project summary (total duration, critical path)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+📈 Critical Path Analysis table
 
-Follow these steps:
+💾 Auto-save using localStorage
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+📥 Export diagram & analysis as PNG
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+🌙 Dark / Light mode support
 
-# Step 3: Install the necessary dependencies.
-npm i
+📱 Mobile responsive UI
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+⚡ Fast Vite + React + TypeScript setup
+
+🛠 Tech Stack
+
+Frontend: React + TypeScript
+
+Styling: Tailwind CSS + shadcn/ui
+
+Diagrams: React Flow
+
+Build Tool: Vite
+
+Deployment: Vercel
+
+📷 Screenshots
+
+Network Diagram, Project Summary & Critical Path Analysis included in the UI.
+
+(Add screenshots later if you want)
+
+📦 Installation (Local Setup)
+git clone https://github.com/your-username/or-network-diagram.git
+cd or-network-diagram
+npm install
 npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Open:
 
-**Use GitHub Codespaces**
+http://localhost:5173
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+(or your configured port)
 
-This project is built with:
+🧑‍🎓 How to Use
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Click Start Building Network
 
-## How can I deploy this project?
+Add activities with:
 
-Simply open [Lovable](https://lovable.dev/projects/f0742b52-23f2-4cd6-8b0c-17ef365e2894) and click on Share -> Publish.
+Activity ID (A, B, C…)
 
-## Can I connect a custom domain to my Lovable project?
+Duration
 
-Yes, you can!
+Predecessors
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Click Generate Network Diagram
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+View:
+
+Visual network
+
+Critical path
+
+Project duration
+
+Download diagram or analysis as PNG
+
+🎯 Use Cases
+
+Operations Research lab work
+
+CPM & PERT academic projects
+
+Project management visualization
+
+Engineering planning simulations
+
+🧠 Future Enhancements
+
+PDF export support
+
+Multiple project saving
+
+Drag & drop activity editor
+
+Zoomable critical path highlight
+
+Teacher mode / student mode
+
+Cloud project storage
+
+👨‍💻 Author
+
+Ashutosh Mishra
+Operations Research Project – 2025
+
+📄 License
+
+This project is open source and free to use for educational purposes.
