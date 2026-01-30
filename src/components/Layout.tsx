@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { ModeToggle } from "./mode-toggle";
+import { AboutUs } from "./AboutUs";
 import { Toaster } from "@/components/ui/sonner";
 
 type LayoutProps = {
@@ -33,7 +34,8 @@ export function Layout({ children }: LayoutProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
+            <AboutUs />
             <ModeToggle />
           </div>
         </div>

@@ -11,6 +11,7 @@ type Constraint = {
   b: number;
   c: number;
   sense: ConstraintSense;
+  operator: "+" | "-";
 };
 
 type Point = { x: number; y: number };
@@ -23,12 +24,13 @@ type Solution = {
 };
 
 const LppSolver: React.FC = () => {
-  const [zx, setZx] = useState(3); // coefficient of x in Z
-  const [zy, setZy] = useState(5); // coefficient of y in Z
+  const [zx, setZx] = useState(3);
+  const [zy, setZy] = useState(5);
+  const [zOperator, setZOperator] = useState<"+" | "-">("+");
 
   const [constraints, setConstraints] = useState<Constraint[]>([
-    { id: 1, a: 1, b: 1, c: 450, sense: "<=" },
-    { id: 2, a: 2, b: 1, c: 600, sense: "<=" },
+    { id: 1, a: 1, b: 1, c: 450, sense: "<=", operator: "+" },
+    { id: 2, a: 2, b: 1, c: 600, sense: "<=", operator: "+" },
   ]);
 
   const [objectiveType, setObjectiveType] = useState<"max" | "min">("max");
@@ -51,7 +53,7 @@ const LppSolver: React.FC = () => {
   const addConstraint = () => {
     setConstraints((prev) => [
       ...prev,
-      { id: Date.now(), a: 1, b: 1, c: 0, sense: "<=" },
+      { id: Date.now(), a: 1, b: 1, c: 0, sense: "<=", operator: "+" },
     ]);
   };
 
@@ -62,7 +64,7 @@ const LppSolver: React.FC = () => {
   const updateConstraint = (
     id: number,
     field: keyof Constraint,
-    value: number | ConstraintSense
+    value: number | ConstraintSense | "+" | "-"
   ) => {
     setConstraints((prev) =>
       prev.map((c) => (c.id === id ? { ...c, [field]: value } : c))
@@ -76,7 +78,8 @@ const LppSolver: React.FC = () => {
 
     // helper: check if a point satisfies a single constraint
     const satisfiesConstraint = (p: Point, c: Constraint): boolean => {
-      const lhs = c.a * p.x + c.b * p.y;
+      const realB = c.operator === "+" ? c.b : -c.b;
+      const lhs = c.a * p.x + realB * p.y;
       const rhs = c.c;
       const eps = 1e-6;
 
@@ -100,7 +103,11 @@ const LppSolver: React.FC = () => {
 
     // all boundary lines: a x + b y = c
     const lines: { a: number; b: number; c: number }[] = [
-      ...constraints.map((c) => ({ a: c.a, b: c.b, c: c.c })),
+      ...constraints.map((c) => ({
+        a: c.a,
+        b: c.operator === "+" ? c.b : -c.b,
+        c: c.c,
+      })),
       { a: 1, b: 0, c: 0 }, // x = 0
       { a: 0, b: 1, c: 0 }, // y = 0
     ];
@@ -160,7 +167,8 @@ const LppSolver: React.FC = () => {
     let bestValue: number | null = null;
 
     unique.forEach((p) => {
-      const z = zx * p.x + zy * p.y;
+      const realZy = zOperator === "+" ? zy : -zy;
+      const z = zx * p.x + realZy * p.y;
 
       if (bestValue === null) {
         bestValue = z;
@@ -206,8 +214,9 @@ const LppSolver: React.FC = () => {
     const ys = feasiblePoints.map((p) => p.y);
 
     constraints.forEach((c) => {
+      const realB = c.operator === "+" ? c.b : -c.b;
       if (c.a !== 0) xs.push(c.c / c.a);
-      if (c.b !== 0) ys.push(c.c / c.b);
+      if (realB !== 0) ys.push(c.c / realB);
     });
 
     const maxX = Math.max(50, ...xs) * 1.1;
@@ -340,9 +349,10 @@ const LppSolver: React.FC = () => {
             {/* constraint lines */}
             {constraints.map((c) => {
               const pts: Point[] = [];
+              const realB = c.operator === "+" ? c.b : -c.b;
 
-              if (c.b !== 0) {
-                const y1 = c.c / c.b;
+              if (realB !== 0) {
+                const y1 = c.c / realB;
                 if (y1 >= 0) pts.push({ x: 0, y: y1 });
               }
               if (c.a !== 0) {
@@ -352,7 +362,7 @@ const LppSolver: React.FC = () => {
 
               if (pts.length < 2) {
                 // fallback in case of weird coefficients
-                pts.push({ x: 0, y: c.c / (c.b || 1) });
+                pts.push({ x: 0, y: c.c / (realB || 1) });
                 pts.push({ x: c.c / (c.a || 1), y: 0 });
               }
 
@@ -376,7 +386,7 @@ const LppSolver: React.FC = () => {
                     transform={`rotate(-35 ${midX} ${midY})`}
                     className="fill-slate-600 dark:fill-slate-400"
                   >
-                    {`${c.a}x + ${c.b}y ${senseSymbol(c.sense)} ${c.c}`}
+                    {`${c.a}x ${c.operator} ${c.b}y ${senseSymbol(c.sense)} ${c.c}`}
                   </text>
                 </g>
               );
@@ -437,8 +447,8 @@ const LppSolver: React.FC = () => {
                 type="button"
                 onClick={() => setObjectiveType("max")}
                 className={`px-3 py-1 transition-colors ${objectiveType === "max"
-                    ? "bg-sky-600 text-white"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  ? "bg-sky-600 text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                   }`}
               >
                 Max
@@ -447,8 +457,8 @@ const LppSolver: React.FC = () => {
                 type="button"
                 onClick={() => setObjectiveType("min")}
                 className={`px-3 py-1 transition-colors ${objectiveType === "min"
-                    ? "bg-sky-600 text-white"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  ? "bg-sky-600 text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                   }`}
               >
                 Min
@@ -469,7 +479,14 @@ const LppSolver: React.FC = () => {
               />
               <span className="font-serif italic">x</span>
             </div>
-            <span>+</span>
+            <select
+              value={zOperator}
+              onChange={(e) => setZOperator(e.target.value as "+" | "-")}
+              className="h-8 w-12 rounded-md border border-input bg-background px-2 py-1 text-sm font-medium shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="+">+</option>
+              <option value="-">-</option>
+            </select>
             <div className="flex items-center gap-1">
               <Input
                 className="w-16 h-8 bg-background"
@@ -513,7 +530,16 @@ const LppSolver: React.FC = () => {
                   }
                 />
                 <span className="font-serif italic">x</span>
-                <span>+</span>
+                <select
+                  value={c.operator}
+                  onChange={(e) =>
+                    updateConstraint(c.id, "operator", e.target.value as "+" | "-")
+                  }
+                  className="h-8 w-12 rounded-md border border-input bg-background px-2 py-1 text-sm font-medium shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring mx-1"
+                >
+                  <option value="+">+</option>
+                  <option value="-">-</option>
+                </select>
                 <Input
                   className="w-16 h-8"
                   type="number"
